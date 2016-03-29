@@ -42,7 +42,7 @@ class NetworkInfection(object):
         plt.show()
 
     def _gen_new_random_graph(self):
-        newgraph = nx.binomial_graph(20, 0.1, directed=True)
+        newgraph = nx.binomial_graph(30, 0.2, directed=True)
         np.save('testnetwork.npy', nx.adjacency_matrix(newgraph).todense())
 
     def choose(self):
