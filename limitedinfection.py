@@ -95,11 +95,32 @@ class NetworkInfection(object):
         """
         We can look at this as virus propagation. As similar as this is with the total infection problem, we actually
         want to use a completely different approach
+
+        Ideas:
+            * Multidimensional decaying markov process
+            * DFS with decaying factor  (EASY)
+        Notes:
+            * Heavily connected areas need to be emphasized
+            * 1-many connections are priority
         """
         inf_sort = lambda l: sorted(l, key=lambda tup: tup[0])
         states = [inf_sort(self.infections.items())]
 
+        subgraphs = list(nx.weakly_connected_component_subgraphs(self.nxgraph))
+        for i in range(len(subgraphs)):
+            g = subgraphs[i]
+            choice = self.choice[i]
 
+            bfs = nx.bfs_edges(g, choice)   # DFS would also work here
+            cnode = choice
+            for start, end in bfs:
+                cnode = start
+                weight = len(nx.shortest_path(self.nxgraph, source=choice, target=cnode))
+                if np.random.random() > np.exp(-weight + 1.5):
+                    break
+                self.infections[end] = True
+                states.append(inf_sort(self.infections.items()))
+        states.append(inf_sort(self.infections.items()))
 
         return states
 
