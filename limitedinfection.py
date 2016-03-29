@@ -23,7 +23,7 @@ def main():
     infection = NetworkInfection(args.nodes, args.prob, args.write, refresh=args.refresh)
     infection.load()
     infection.choose()
-    states = infection.total_infection()
+    states = infection.limited_infection()
     if args.animate:
         infection.animate_infection(states)
 
@@ -125,7 +125,10 @@ class NetworkInfection(object):
         plt.show()
 
     def limited_infection(self):
-        pass
+        inf_sort = lambda l: sorted(l, key=lambda tup: tup[0])
+        states = [inf_sort(self.infections.items())]
+
+        return states
 
 
 def get_args():
