@@ -14,14 +14,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import networkx as nx
+import argparse
 
 
 def main():
-    infection = NetworkInfection(refresh=True)
+    args = get_args()
+
+    infection = NetworkInfection(refresh=args.refresh)
     infection.load()
     infection.choose()
     states = infection.total_infection()
-    infection.animate_infection(states)
+    if args.animate:
+        infection.animate_infection(states)
 
 class NetworkInfection(object):
     def __init__(self, filename='./testnetwork.npy', refresh=False, choose_node=False):
@@ -121,6 +125,15 @@ class NetworkInfection(object):
     def limited_infection(self):
         pass
 
+
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-r', '--refresh', action='store_true', default=False,
+                            help='Refresh Graph')
+    parser.add_argument('-a', '--animate', action='store_true', default=False,
+                            help='Animate Infection')
+    args = parser.parse_args()
+    return args
 
 
 if __name__ == '__main__':

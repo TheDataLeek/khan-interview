@@ -4,6 +4,7 @@ import limitedinfection
 import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
+import functools
 import pytest
 
 class TestInfection(object):
@@ -24,6 +25,24 @@ class TestInfection(object):
         assert(infection.choice is False)
         infection.choose()
         oldchoice = infection.choice
-        assert(infection.choice in infection.nxgraph.nodes())
+        for c in infection.choice:
+            assert(c in infection.nxgraph.nodes())
         infection.choose()
         assert(oldchoice == infection.choice)
+
+    def test_initial_infection(self, infection):
+        infection.load()
+        infection.choose()
+        for node, status in infection.infections.items():
+            if node in infection.choice:
+                assert(status is True)
+            else:
+                assert(status is False)
+
+    def test_total_infection(self, infection):
+        infection.load()
+        infection.choose()
+        states = infection.total_infection()
+        # Assert everything infected at end
+        assert(functools.reduce(lambda acc, x: acc and x,
+                [status for node, status in states[-1]]))
