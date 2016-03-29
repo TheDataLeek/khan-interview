@@ -67,7 +67,6 @@ class NetworkInfection(object):
 
     def _infection_list(self):
         self.infections = {n:(True if n in self.choice else False) for n in self.nxgraph.nodes()}
-        print(self.infections)
 
     def total_infection(self):
         """
@@ -89,29 +88,33 @@ class NetworkInfection(object):
             for start, end in bfs:
                 self.infections[end] = True
                 states.append(inf_sort(self.infections.items()))
+        states.append(inf_sort(self.infections.items()))
         return states
 
     def animate_infection(self, states):
         fig = plt.figure()
         ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
         pos = nx.spring_layout(self.nxgraph)
-        colors = [0 if infection is False else 1 for node, infection in states[0]]
-        nodes = nx.draw_networkx_nodes(self.nxgraph, pos=pos, node_color=colors)
+
+        colors = np.zeros((len(states[0]), len(states)))
+        for i in range(len(states)):
+            colors[:, i] = [0 if infection is False else 1 for node, infection in states[i]]
+
+        nodes = nx.draw_networkx_nodes(self.nxgraph, pos=pos, node_color=colors[:, 0])
         edges = nx.draw_networkx_edges(self.nxgraph, pos=pos)
 
         def animate(i):
-            colors = [0 if infection is False else 1 for node, infection in states[i]]
-            nodes = nx.draw_networkx_nodes(self.nxgraph, pos=pos, node_color=colors)
+            nodes = nx.draw_networkx_nodes(self.nxgraph, pos=pos, node_color=colors[:, i])
             return nodes, edges
 
         def init():
             return nodes, edges
 
         ani = animation.FuncAnimation(fig, animate, np.arange(len(states)), init_func=init,
-                interval=20)
-        Writer = animation.writers['ffmpeg']
-        writer = Writer(fps=10, metadata=dict(artist='Will Farmer'), bitrate=1800)
-        ani.save('infection.mp4', writer=writer)
+                interval=50)
+        # Writer = animation.writers['ffmpeg']
+        # writer = Writer(fps=10, metadata=dict(artist='Will Farmer'), bitrate=1800)
+        # ani.save('infection.mp4', writer=writer)
 
         plt.show()
 
