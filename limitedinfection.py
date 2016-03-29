@@ -20,7 +20,7 @@ import argparse
 def main():
     args = get_args()
 
-    infection = NetworkInfection(refresh=args.refresh)
+    infection = NetworkInfection(args.nodes, args.prob, args.write, refresh=args.refresh)
     infection.load()
     infection.choose()
     states = infection.total_infection()
@@ -28,17 +28,17 @@ def main():
         infection.animate_infection(states)
 
 class NetworkInfection(object):
-    def __init__(self, filename='./testnetwork.npy', refresh=False, choose_node=False):
+    def __init__(self, nodecount, prob, write, filename='./testnetwork.npy', refresh=False, choose_node=False):
         self.networkfile = filename
         self.graph       = None
         self.nxgraph     = None
         self.choice      = choose_node
+        self.write       = write
         self.infections  = None
-
         self.subgraphs   = False
 
         if refresh:
-            self._gen_new_random_graph()
+            self._gen_new_random_graph(nodecount, prob)
             self.filename = './testnetwork.npy'
 
     def load(self):
@@ -52,8 +52,8 @@ class NetworkInfection(object):
         nx.draw(self.nxgraph, pos=nx.spring_layout(self.nxgraph))
         plt.show()
 
-    def _gen_new_random_graph(self):
-        newgraph = nx.binomial_graph(50, 0.02)
+    def _gen_new_random_graph(self, nodecount, prob):
+        newgraph = nx.binomial_graph(nodecount, prob)
         np.save('testnetwork.npy', nx.adjacency_matrix(newgraph).todense())
 
     def choose(self):
@@ -116,9 +116,11 @@ class NetworkInfection(object):
 
         ani = animation.FuncAnimation(fig, animate, np.arange(len(states)), init_func=init,
                 interval=50)
-        # Writer = animation.writers['ffmpeg']
-        # writer = Writer(fps=10, metadata=dict(artist='Will Farmer'), bitrate=1800)
-        # ani.save('infection.mp4', writer=writer)
+
+        if self.write:
+            Writer = animation.writers['ffmpeg']
+            writer = Writer(fps=10, metadata=dict(artist='Will Farmer'), bitrate=1800)
+            ani.save('infection.mp4', writer=writer)
 
         plt.show()
 
@@ -132,6 +134,12 @@ def get_args():
                             help='Refresh Graph')
     parser.add_argument('-a', '--animate', action='store_true', default=False,
                             help='Animate Infection')
+    parser.add_argument('-w', '--write', action='store_true', default=False,
+                            help='Save Animation')
+    parser.add_argument('-n', '--nodes', type=int, default=20,
+                            help='How many nodes to generate')
+    parser.add_argument('-p', '--prob', type=float, default=0.2,
+                            help='Edge Probability')
     args = parser.parse_args()
     return args
 
