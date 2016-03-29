@@ -17,10 +17,11 @@ import networkx as nx
 
 
 def main():
-    infection = NetworkInfection()
+    infection = NetworkInfection(refresh=True)
     infection.load()
     infection.choose()
-    infection.total_infection(animate=True)
+    states = infection.total_infection()
+    infection.animate_infection(states)
 
 class NetworkInfection(object):
     def __init__(self, filename='./testnetwork.npy', refresh=False, choose_node=False):
@@ -30,6 +31,8 @@ class NetworkInfection(object):
         self.choice      = choose_node
         self.infections  = None
 
+        self.subgraphs   = False
+
         if refresh:
             self._gen_new_random_graph()
             self.filename = './testnetwork.npy'
@@ -37,6 +40,8 @@ class NetworkInfection(object):
     def load(self):
         self.graph   = np.load(self.networkfile)
         self.nxgraph = nx.DiGraph(self.graph)
+        if nx.number_weakly_connected_components(self.nxgraph) > 1:
+            self.subgraphs = True
 
     def show(self):
         plt.figure()
@@ -44,24 +49,27 @@ class NetworkInfection(object):
         plt.show()
 
     def _gen_new_random_graph(self):
-        newgraph = nx.binomial_graph(30, 0.2, directed=True)
+        newgraph = nx.binomial_graph(50, 0.02)
         np.save('testnetwork.npy', nx.adjacency_matrix(newgraph).todense())
 
     def choose(self):
         """
         TODO: Need to make sure choice is part of connected subgraph. (not trivial)
         """
-        if type(self.choice) == bool:
+        if type(self.choice) == bool:   # Prevent from re-picking
             if self.choice:
-                self.choice = input('Select Node')
+                self.choice = [input('Select Node(s)')]   # Not really intended for use
             else:
-                self.choice = np.random.choice(self.nxgraph.nodes())
+                self.choice = []
+                for g in nx.weakly_connected_component_subgraphs(self.nxgraph):
+                    self.choice.append(np.random.choice(g.nodes()))
         self._infection_list()
 
     def _infection_list(self):
-        self.infections = {n:(True if n == self.choice else False) for n in self.nxgraph.nodes()}
+        self.infections = {n:(True if n in self.choice else False) for n in self.nxgraph.nodes()}
+        print(self.infections)
 
-    def total_infection(self, animate=False):
+    def total_infection(self):
         """
         This part is straightforward, just simple graph traversal.
 
@@ -71,12 +79,17 @@ class NetworkInfection(object):
         """
         inf_sort = lambda l: sorted(l, key=lambda tup: tup[0])
         states = [inf_sort(self.infections.items())]
-        bfs = nx.bfs_edges(self.nxgraph, self.choice)   # DFS would also work here
-        for start, end in bfs:
-            self.infections[end] = True
-            states.append(inf_sort(self.infections.items()))
-        if animate:
-            self.animate_infection(states)
+
+        subgraphs = list(nx.weakly_connected_component_subgraphs(self.nxgraph))
+        for i in range(len(subgraphs)):
+            g = subgraphs[i]
+            choice = self.choice[i]
+
+            bfs = nx.bfs_edges(g, choice)   # DFS would also work here
+            for start, end in bfs:
+                self.infections[end] = True
+                states.append(inf_sort(self.infections.items()))
+        return states
 
     def animate_infection(self, states):
         fig = plt.figure()
