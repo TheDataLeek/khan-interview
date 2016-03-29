@@ -74,11 +74,7 @@ class NetworkInfection(object):
 
     def total_infection(self):
         """
-        This part is straightforward, just simple graph traversal.
-
-        Initially we will assume heavily connected graph (no independent subgraphs)
-
-        TODO: Deal with independent subgraphs (own assertion probably)
+        This part is straightforward, just simple graph traversal. (on connected subgraphs)
         """
         inf_sort = lambda l: sorted(l, key=lambda tup: tup[0])
         states = [inf_sort(self.infections.items())]
@@ -93,6 +89,18 @@ class NetworkInfection(object):
                 self.infections[end] = True
                 states.append(inf_sort(self.infections.items()))
         states.append(inf_sort(self.infections.items()))
+        return states
+
+    def limited_infection(self):
+        """
+        We can look at this as virus propagation. As similar as this is with the total infection problem, we actually
+        want to use a completely different approach
+        """
+        inf_sort = lambda l: sorted(l, key=lambda tup: tup[0])
+        states = [inf_sort(self.infections.items())]
+
+
+
         return states
 
     def animate_infection(self, states):
@@ -124,11 +132,6 @@ class NetworkInfection(object):
 
         plt.show()
 
-    def limited_infection(self):
-        inf_sort = lambda l: sorted(l, key=lambda tup: tup[0])
-        states = [inf_sort(self.infections.items())]
-
-        return states
 
 
 def get_args():
