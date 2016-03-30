@@ -16,6 +16,9 @@ import matplotlib.animation as animation
 import networkx as nx
 import argparse
 
+# I have a big screen
+np.set_printoptions(linewidth=160)
+
 
 def main():
     args = get_args()
@@ -110,6 +113,7 @@ class NetworkInfection(object):
         Decaying Markov Chain
             * Probabilities decay proportionally to centrality. In essence, the further away from the center you
             get, the less chance you have of being infected.
+                * Using 1 / (x+c) where x is size of infection and c is centrality for the node
             * Combined with flat threshhold?
         """
         scores, node = self._graph_centrality()
@@ -117,6 +121,22 @@ class NetworkInfection(object):
         self._infection_list()  # Need to refresh infection status
 
         states = [self._infection_sort(self.infections.items())]
+
+        markovchain = self._get_markovchain()
+        cnode = node
+        while True:   # Rebalances weights /every/ cycle
+            print(cnode, self.infections[cnode], self._infection_size())
+            cnode = np.random.choice(np.arange(self.graph.shape[0]), p=markovchain[:, cnode])
+            self.infections[cnode] = True
+            size = self._infection_size()
+            weights = [5 / (size + scores[i][1]) for i in range(self.graph.shape[0])]
+            markovchain[:, cnode] *= weights
+            markovchain[cnode, cnode] += 1 - markovchain[:, cnode].sum()
+            states.append(self._infection_sort(self.infections.items()))
+            if size >= infect_max:
+                break
+
+        states.append(self._infection_sort(self.infections.items()))
 
         return states
 
@@ -128,7 +148,7 @@ class NetworkInfection(object):
         position.
         """
         # Markov chain is initially randomized probabilities
-        markovchain = (self.graph * np.random.random(self.graph.shape))
+        markovchain = ((self.graph + np.eye(self.graph.shape[0])) * np.random.random(self.graph.shape))
         # Need to normalize (columns need to sum to 1)
         markovchain /= markovchain.sum(axis=0)
         return markovchain
