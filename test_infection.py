@@ -8,9 +8,9 @@ import functools
 import pytest
 
 class TestInfection(object):
-    @pytest.fixture()
+    @pytest.fixture(scope='module')
     def infection(self):
-        return limitedinfection.NetworkInfection(50, 0.2, './testnetwork.npy')
+        return limitedinfection.NetworkInfection(50, 0.08, './testnetwork.npy')
 
     def test_init(self, infection):
         assert(infection.networkfile == './testnetwork.npy')
@@ -46,3 +46,8 @@ class TestInfection(object):
         # Assert everything infected at end
         assert(functools.reduce(lambda acc, x: acc and x,
                 [status for node, status in states[-1]]))
+
+    def test_markovchain(self, infection):
+        infection.load()
+        chain = infection._get_markovchain()
+        assert(chain.sum(axis=1).all() == 1)

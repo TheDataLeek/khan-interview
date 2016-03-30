@@ -273,6 +273,8 @@ def get_args():
     parser.add_argument('-k', '--stickiness', type=int, default=3,
                             help='How sticky the Markov Process is')
     args = parser.parse_args()
+    if args.size != -1:
+        args.stickiness = 100
     return args
 
 
