@@ -119,6 +119,8 @@ class NetworkInfection(object):
 
         states = [self._infection_sort(self.infections.items())]
 
+        # TODO: Markov Chains
+
         return states
 
     def _infection_size(self):
