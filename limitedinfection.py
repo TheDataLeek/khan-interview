@@ -96,7 +96,7 @@ class NetworkInfection(object):
         states.append(self._infection_sort(self.infections.items()))
         return states
 
-    def limited_infection(self, infect_limit=10):
+    def limited_infection(self, infect_max=10, infect_size=None):
         """
         We can look at this as virus propagation. As similar as this is with the total infection problem, we actually
         want to use a completely different approach
@@ -107,11 +107,10 @@ class NetworkInfection(object):
             infecting a network.
             * THIS IS MUCH BETTER THAN RANDOM CHOICE (probably?)
 
-        Ideas:
-            * Decaying Markov Chain
-        Notes:
-            * Heavily connected areas need to be emphasized
-            * 1-many connections are priority
+        Decaying Markov Chain
+            * Probabilities decay proportionally to centrality. In essence, the further away from the center you
+            get, the less chance you have of being infected.
+            * Combined with flat threshhold?
         """
         scores, node = self._graph_centrality()
         self.choice = [node]  # We want this central node to be choice
@@ -119,9 +118,20 @@ class NetworkInfection(object):
 
         states = [self._infection_sort(self.infections.items())]
 
-        # TODO: Markov Chains
-
         return states
+
+    def _get_markovchain(self):
+        """
+        Returns randomized initial markov chain for graph.
+
+        How this works: in order to determine next position, randomly pick entry from column corresponding to current
+        position.
+        """
+        # Markov chain is initially randomized probabilities
+        markovchain = (self.graph * np.random.random(self.graph.shape))
+        # Need to normalize (columns need to sum to 1)
+        markovchain /= markovchain.sum(axis=0)
+        return markovchain
 
     def _infection_size(self):
         count = 0
