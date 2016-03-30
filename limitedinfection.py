@@ -54,7 +54,7 @@ class NetworkInfection(object):
 
     def _gen_new_random_graph(self, nodecount, prob):
         newgraph = nx.binomial_graph(nodecount, prob)
-        np.save('testnetwork.npy', nx.adjacency_matrix(newgraph).todense())
+        #np.save('testnetwork.npy', nx.adjacency_matrix(newgraph).todense())
 
     def choose(self):
         """
@@ -72,12 +72,17 @@ class NetworkInfection(object):
     def _infection_list(self):
         self.infections = {n:(True if n in self.choice else False) for n in self.nxgraph.nodes()}
 
+    def _infection_sort(self, inf_list):
+        """
+        Need to sort list form of infection as dictionaries are unsorted
+        """
+        return sorted(inf_list, key=lambda tup: tup[0])
+
     def total_infection(self):
         """
         This part is straightforward, just simple graph traversal. (on connected subgraphs)
         """
-        inf_sort = lambda l: sorted(l, key=lambda tup: tup[0])
-        states = [inf_sort(self.infections.items())]
+        states = [self._infection_sort(self.infections.items())]
 
         subgraphs = list(nx.weakly_connected_component_subgraphs(self.nxgraph))
         for i in range(len(subgraphs)):
@@ -87,24 +92,61 @@ class NetworkInfection(object):
             bfs = nx.bfs_edges(g, choice)   # DFS would also work here
             for start, end in bfs:
                 self.infections[end] = True
-                states.append(inf_sort(self.infections.items()))
-        states.append(inf_sort(self.infections.items()))
+                states.append(self._infection_sort(self.infections.items()))
+        states.append(self._infection_sort(self.infections.items()))
         return states
 
-    def limited_infection(self):
+    def limited_infection(self, infect_limit=10):
         """
         We can look at this as virus propagation. As similar as this is with the total infection problem, we actually
         want to use a completely different approach
 
+        We want to start the infection at the most central node.
+            * The core idea here is that since we want to limit our network so that it only affects "groups" of people,
+            we want to initially start at the most connected person so that way there's less of a chance of only halfway
+            infecting a network.
+            * THIS IS MUCH BETTER THAN RANDOM CHOICE (probably?)
+
         Ideas:
-            * Multidimensional decaying markov process
-            * DFS with decaying factor  (EASY)
+            * Decaying Markov Chain
         Notes:
             * Heavily connected areas need to be emphasized
             * 1-many connections are priority
         """
-        inf_sort = lambda l: sorted(l, key=lambda tup: tup[0])
-        states = [inf_sort(self.infections.items())]
+        scores, node = self._graph_centrality()
+        self.choice = [node]  # We want this central node to be choice
+        self._infection_list()  # Need to refresh infection status
+
+        states = [self._infection_sort(self.infections.items())]
+
+        return states
+
+    def _infection_size(self):
+        count = 0
+        for key, value in self.infections.items():
+            if value is True:
+                count += 1
+        return count
+
+    def _graph_centrality(self):
+        """
+        Finds the most central node in the graph.
+        https://en.wikipedia.org/wiki/Centrality
+
+        This uses the eigenvector centrality:
+        https://networkx.github.io/documentation/latest/reference/generated/networkx.algorithms.centrality.eigenvector_centrality.html#networkx.algorithms.centrality.eigenvector_centrality
+        """
+        centrality_scores = [(a, b) for a, b in nx.eigenvector_centrality(self.nxgraph).items()]
+        central_node = max(centrality_scores, key=lambda tup: tup[1])[0]  # We now use this as our choice
+        return centrality_scores, central_node
+
+    def naive_limited_infection(self):
+        """
+        NAIVE LIMITED INFECTION
+
+        Just does a DFS with decay factor
+        """
+        states = [self._infection_sort(self.infections.items())]
 
         subgraphs = list(nx.weakly_connected_component_subgraphs(self.nxgraph))
         for i in range(len(subgraphs)):
@@ -119,8 +161,8 @@ class NetworkInfection(object):
                 if np.random.random() > np.exp(-weight + 1.5):
                     break
                 self.infections[end] = True
-                states.append(inf_sort(self.infections.items()))
-        states.append(inf_sort(self.infections.items()))
+                states.append(self._infection_sort(self.infections.items()))
+        states.append(self._infection_sort(self.infections.items()))
 
         return states
 
@@ -135,6 +177,7 @@ class NetworkInfection(object):
 
         nodes = nx.draw_networkx_nodes(self.nxgraph, pos=pos, node_color=colors[:, 0])
         edges = nx.draw_networkx_edges(self.nxgraph, pos=pos)
+        labels = nx.draw_networkx_labels(self.nxgraph, pos=pos, font_color='w')
 
         def animate(i):
             nodes = nx.draw_networkx_nodes(self.nxgraph, pos=pos, node_color=colors[:, i])
