@@ -42,6 +42,22 @@ the virus.
 
 ![Total Infection](https://raw.githubusercontent.com/willzfarmer/khan-interview/master/animations/totalinfection.gif)
 
+The one possible issue with this approach is that if we have [independent
+subgraphs](https://en.wikipedia.org/wiki/Connectivity_%28graph_theory%29) we
+need to examine each separately.
+
+The code for this is also fairly straightforward, especially as `networkx` has
+graph traversal algorithms built in.
+
+```python
+subgraphs = list(nx.weakly_connected_component_subgraphs(self.nxgraph))
+for i, graph in enumerate(subgraphs):
+    choice = self.choice[i]
+    bfs = nx.bfs_edges(graph, choice)
+    for start, end in bfs:
+        self.infections[end] = True
+```
+
 ## Part B - Limited Infection
 
 > We would like to be able to infect close to a given number of users. Ideally
