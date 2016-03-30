@@ -10,7 +10,7 @@ import pytest
 class TestInfection(object):
     @pytest.fixture()
     def infection(self):
-        return limitedinfection.NetworkInfection('./testnetwork.npy')
+        return limitedinfection.NetworkInfection(50, 0.2, './testnetwork.npy')
 
     def test_init(self, infection):
         assert(infection.networkfile == './testnetwork.npy')
