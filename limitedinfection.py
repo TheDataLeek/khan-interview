@@ -114,7 +114,7 @@ class NetworkInfection(object):
 
     def total_infection(self):
         """
-        This part is straightforward, just simple DFS graph traversal on each independent subgraph.
+        This part is straightforward, just simple BFS graph traversal on each independent subgraph.
         """
         states = [dict_item_sort(self.infections.items())]
 
