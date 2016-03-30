@@ -26,7 +26,7 @@ def main():
     infection = NetworkInfection(args.nodes, args.prob, args.write, refresh=args.refresh)
     infection.load()
     infection.choose()
-    states = infection.limited_infection()
+    states = infection.limited_infection(args.size)
     if args.animate:
         infection.animate_infection(states)
 
@@ -57,7 +57,7 @@ class NetworkInfection(object):
 
     def _gen_new_random_graph(self, nodecount, prob):
         newgraph = nx.binomial_graph(nodecount, prob)
-        #np.save('testnetwork.npy', nx.adjacency_matrix(newgraph).todense())
+        np.save('testnetwork.npy', nx.adjacency_matrix(newgraph).todense())
 
     def choose(self):
         """
@@ -99,7 +99,7 @@ class NetworkInfection(object):
         states.append(self._infection_sort(self.infections.items()))
         return states
 
-    def limited_infection(self, infect_max=10, infect_size=None):
+    def limited_infection(self, infection_size):
         """
         We can look at this as virus propagation. As similar as this is with the total infection problem, we actually
         want to use a completely different approach
@@ -113,9 +113,14 @@ class NetworkInfection(object):
         Decaying Markov Chain
             * Probabilities decay proportionally to centrality. In essence, the further away from the center you
             get, the less chance you have of being infected.
-                * Using 1 / (x+c) where x is size of infection and c is centrality for the node
-            * Combined with flat threshhold?
+                * Using 1 / ((x+c)**2) where x is size of infection and c is centrality for the node
+            * Combined with flat threshhold
+            * Breakout condition is if it's bounced around inside the network 3 times
         """
+        # If no infection size, set to max size of graph and rely on decay process
+        if infection_size == -1:
+            infection_size = len(self.nxgraph.nodes())
+
         scores, node = self._graph_centrality()
         self.choice = [node]  # We want this central node to be choice
         self._infection_list()  # Need to refresh infection status
@@ -124,19 +129,35 @@ class NetworkInfection(object):
 
         markovchain = self._get_markovchain()
         cnode = node
-        while True:   # Rebalances weights /every/ cycle
-            print(cnode, self.infections[cnode], self._infection_size())
+        size = self._infection_size()
+        network_stickiness = 0
+        while size < infection_size:   # Rebalances cnode weights /every/ cycle
+            # Choose next node to jump to
+            pnode = cnode
             cnode = np.random.choice(np.arange(self.graph.shape[0]), p=markovchain[:, cnode])
-            self.infections[cnode] = True
-            size = self._infection_size()
-            weights = [5 / (size + scores[i][1]) for i in range(self.graph.shape[0])]
-            markovchain[:, cnode] *= weights
-            markovchain[cnode, cnode] += 1 - markovchain[:, cnode].sum()
-            states.append(self._infection_sort(self.infections.items()))
-            if size >= infect_max:
+            # Check Stickiness
+            if self.infections[cnode] == False:
+                network_stickiness = 0
+            else:
+                network_stickiness += 1
+            if network_stickiness >= 3:
                 break
+            # Set its status to "infected"
+            self.infections[cnode] = True
+            # Rebalance current choices.
+            # As size of infected network increases, and as we get further away from the center lower probs
+            # Increase probability of a backjump (to stay close to center and keep infecting from there)
+            size = self._infection_size()
+            weights = np.array([1 / ((size + scores[i][1])**2) for i in range(self.graph.shape[0])])  # I think this decays too fast
+            weights /= weights.sum()
+            markovchain[:, cnode] = weights
+            markovchain[pnode, cnode] += 1 - markovchain[:, cnode].sum()  # Increase prob for backjump
+
+            states.append(self._infection_sort(self.infections.items()))
 
         states.append(self._infection_sort(self.infections.items()))
+
+        print('Final Infection Size: {}'.format(self._infection_size()))
 
         return states
 
@@ -242,6 +263,8 @@ def get_args():
                             help='How many nodes to generate')
     parser.add_argument('-p', '--prob', type=float, default=0.2,
                             help='Edge Probability')
+    parser.add_argument('-s', '--size', type=int, default=-1,
+                            help='How many nodes to infect')
     args = parser.parse_args()
     return args
 
