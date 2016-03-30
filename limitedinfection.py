@@ -26,7 +26,10 @@ def main():
     infection = NetworkInfection(args.nodes, args.prob, args.write, refresh=args.refresh)
     infection.load()
     infection.choose()
-    states = infection.limited_infection(args.size)
+    if args.limited:
+        states = infection.limited_infection(args.size, args.stickiness)
+    else:
+        states = infection.total_infection()
     if args.animate:
         infection.animate_infection(states)
 
@@ -99,7 +102,7 @@ class NetworkInfection(object):
         states.append(self._infection_sort(self.infections.items()))
         return states
 
-    def limited_infection(self, infection_size):
+    def limited_infection(self, infection_size, stickiness):
         """
         We can look at this as virus propagation. As similar as this is with the total infection problem, we actually
         want to use a completely different approach
@@ -140,7 +143,7 @@ class NetworkInfection(object):
                 network_stickiness = 0
             else:
                 network_stickiness += 1
-            if network_stickiness >= 3:
+            if network_stickiness >= stickiness:
                 break
             # Set its status to "infected"
             self.infections[cnode] = True
@@ -259,12 +262,16 @@ def get_args():
                             help='Animate Infection')
     parser.add_argument('-w', '--write', action='store_true', default=False,
                             help='Save Animation')
+    parser.add_argument('-l', '--limited', action='store_true', default=False,
+                            help='Limited Infection or Total? -l indicates limited')
     parser.add_argument('-n', '--nodes', type=int, default=20,
                             help='How many nodes to generate')
     parser.add_argument('-p', '--prob', type=float, default=0.2,
                             help='Edge Probability')
     parser.add_argument('-s', '--size', type=int, default=-1,
                             help='How many nodes to infect')
+    parser.add_argument('-k', '--stickiness', type=int, default=3,
+                            help='How sticky the Markov Process is')
     args = parser.parse_args()
     return args
 
