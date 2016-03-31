@@ -1,6 +1,6 @@
 #!/usr/bin/env python3.5
 
-import limitedinfection
+import infection
 import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx

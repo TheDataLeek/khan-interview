@@ -4,14 +4,17 @@
 
 Part of the interview process at Khan Academy is to complete their interview
 project. This project (in a nutshell) deals with virus propagation through a
-directed network. I will be using the terms "graph" and "network"
+directed network. We will be using the terms "graph" and "network"
 interchangeably, [but I'm referring to the same thing for
 both](https://en.wikipedia.org/wiki/Graph_theory).
+
+*Note, `python3.5` is used for this analysis and it has not been tested for
+other versions.*
 
 *We will be using [`pytest`](http://pytest.org/latest/),
 [`numpy`](http://www.numpy.org/), [`matplotlib`](http://matplotlib.org/), and
 [`networkx`](https://networkx.github.io/) as external libraries for this
-analysis. I will be using the following common abreviations:*
+analysis. We will be using the following common abreviations:*
 
 ```python
 import numpy as np
@@ -32,7 +35,7 @@ for the nodes, and instead just refer to them as numbers for simplicity.
 ## Choosing an Initial Infected Node
 
 The first part of this is to figure out where exactly to kick off our infection.
-There are a couple ways to do this, and I use two main ones.
+There are a couple ways to do this, and we use two main ones.
 
 ### The Naive Approach
 
@@ -114,6 +117,15 @@ for i, graph in enumerate(subgraphs):
         self.infections[end] = True
 ```
 
+To run this code yourself, run
+
+```bash
+python3.5 ./infection.py -a
+```
+
+And it will infect all the nodes with a nice little animation once the analysis
+is complete.
+
 ## Part B - Limited Infection
 
 > We would like to be able to infect close to a given number of users. Ideally
@@ -126,4 +138,62 @@ for i, graph in enumerate(subgraphs):
 This is a little harder, and there are many different ways to approach the
 problem.
 
+### Naive Limited Infection
+
+The most straightforward approach is to just do the same breadth-first search
+used in the total infection portion, and just put a limiter on it. Once `n`
+nodes have been infected, just stop infecting new ones and leave it at that.
+This works *ok*, but it lacks a concept of importance. It doesn't prioritize
+certain nodes over others (which we probably want). As solutions go though, it's
+not bad as it's much faster than other solutions and we can give it an exact
+number of nodes to infect, and it will *always* infect that number of nodes (as
+long as that number is less than the total size of the graph).
+
+### (Better) Naive Limited Infection
+
+A slightly better method is to use a decaying probability function, and break
+out of the infection process once the "escape probability" is high enough. This
+has the benefit that it's almost as fast as the naive approach, but it's less
+good in that we can no longer choose to only infect a certain number of nodes.
+We just can define the decay rate for our virus. This is the version implemented
+in the code under the name `naive_limited_infection`.
+
+### Markov Chain Infection
+
+An interested way that assumes the virus is a single-state entity bouncing
+around in the network is called a [Markov
+Chain](https://en.wikipedia.org/wiki/Markov_chain). There are a bunch good
+tutorials that go in depth on how exactly these work ([specifically check this
+one out](http://setosa.io/ev/markov-chains/)), but in essence we have a matrix
+of probabilities of state changes which don't rely on the previous state.
+
+In this implementation, we set our initial virus location as the most central
+node, and then based on the adjacency matrix of our network, we set up a random
+initial markov matrix (making sure that each column sums to 1), and then proceed
+to basically bounce around a bunch until we hit a certain number of infected
+nodes, or until we bounce around too much inside the infected portion of the
+network.
+
 ![Limited Infection](https://raw.githubusercontent.com/willzfarmer/khan-interview/master/animations/limitedinfections.gif)
+
+The really interesting part about this is that every time we jump to a new node,
+we rebalance the new node's jump probabilities based on the size of the infected
+network as well as the centrality score of the new node. These terms make our
+probabilities decay, and the "rest of the probability" is put in the node that
+was previously visited, essentially emphasizing "backjumps". This means that as our
+infected network grows, and as our nodes become less and less important, there's
+a smaller and smaller chance of infecting a new node, until it eventually
+bounces around inside the infected network too much and stops infecting new
+nodes.
+
+To run this yourself, use
+
+```bash
+python3.5 ./infection.py -l -a
+```
+
+## Final Thoughts
+
+This is a hard problem with a ton of solutions. The naive approaches work *very*
+well, but they also miss out on a lot of the nuanced behavior that occurs in
+this sort of problem.
