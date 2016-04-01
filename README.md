@@ -8,6 +8,13 @@ directed network. We will be using the terms "graph" and "network"
 interchangeably, [but I'm referring to the same thing for
 both](https://en.wikipedia.org/wiki/Graph_theory).
 
+From a high level, Khan Academy is curious as to the best method for choosing a
+small portion of their users to be affected by UI changes (along with others),
+without affecting every user at the same time. They define their network of
+users by *Teacher -> Student* relationships.
+
+---
+
 *Note, `python3.5` is used for this analysis and it has not been tested for
 other versions.*
 
@@ -84,6 +91,19 @@ the network.
 Again, we need to pick one of these per subgraph, so that way we aren't limited
 by unconnected portions of the graph.
 
+### Steps Forward
+
+Other good methods that were considered (but not implemented) were using various
+centrality metrics in order to examine the best center point. These include
+
+* Degree Centrality
+* Closeness Centrality
+* Betweenness Centrality
+* PageRank
+* etc.
+
+To emphasize rigour, these various centrality measures could be compared.
+
 ## Part A - Total Infections
 
 > Ideally we would like every user in any given classroom to be using the same
@@ -156,7 +176,8 @@ out of the infection process once the "escape probability" is high enough. This
 has the benefit that it's almost as fast as the naive approach, but it's less
 good in that we can no longer choose to only infect a certain number of nodes.
 We just can define the decay rate for our virus. This is the version implemented
-in the code under the name `naive_limited_infection`.
+in the code under the name `naive_limited_infection`. Note, that this doesn't
+really give us any benefits over the basic Naive Limited Infection.
 
 ### Markov Chain Infection
 
@@ -186,6 +207,10 @@ a smaller and smaller chance of infecting a new node, until it eventually
 bounces around inside the infected network too much and stops infecting new
 nodes.
 
+(So, because our new probability is based off of where we came from, this is not
+actually a Markov Chain, as it no longer satisfies the [Markov
+process](https://en.wikipedia.org/wiki/Markov_process) criteria...)
+
 To run this yourself, use
 
 ```bash
@@ -197,3 +222,7 @@ python3.5 ./infection.py -l -a
 This is a hard problem with a ton of solutions. The naive approaches work *very*
 well, but they also miss out on a lot of the nuanced behavior that occurs in
 this sort of problem.
+
+From here the next best steps are to start examining other algorithms. A good
+approach would be to find the "densest" part of the network and infect it. The
+Markov Chain process above attempts to do this, but it's far from perfect.
