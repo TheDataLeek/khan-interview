@@ -1,6 +1,5 @@
 # Khan Academy Virus Propagation
 
-[Github](https://github.com/willzfarmer/khan-interview)
 [![Build Status](https://travis-ci.org/willzfarmer/khan-interview.svg?branch=master)](https://travis-ci.org/willzfarmer/khan-interview)
 
 Part of the interview process at Khan Academy is to complete their interview
