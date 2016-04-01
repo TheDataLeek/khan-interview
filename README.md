@@ -1,4 +1,4 @@
-# Khan Academy Virus Propagation
+# [Khan Academy Virus Propagation](https://github.com/willzfarmer/khan-interview)
 
 [![Build Status](https://travis-ci.org/willzfarmer/khan-interview.svg?branch=master)](https://travis-ci.org/willzfarmer/khan-interview)
 
