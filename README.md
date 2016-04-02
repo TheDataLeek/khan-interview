@@ -227,3 +227,19 @@ this sort of problem.
 From here the next best steps are to start examining other algorithms. A good
 approach would be to find the "densest" part of the network and infect it. The
 Markov Chain process above attempts to do this, but it's far from perfect.
+
+A important part to note about my stab at this project, is that the fact that we
+have a directed graph doesn't matter too much at the end of the day. Since we
+want the virus to propagate both forwards and backwards on these directed edges,
+we can treat the graph like it was undirected and just emphasize more central
+nodes. A more sophisticated method could in theory use these directed edges for
+more accurate infection, however it would probably be unproductive as we still
+want these infections to go both ways.
+
+In terms of time spent working on this, the code itself was written in probably
+4 to 6 hours, and then an additional 2-4 hours (hard to track) was spent on
+documentation and this writeup. I'm still torn on the concept of an interview
+project as it can be unrealistic for non-students (read, people with day jobs)
+to spend as much time as I have on it, however I do think that this is a good
+example of a project that can have a minimum viable product written in just an
+hour or two if time is an issue.
