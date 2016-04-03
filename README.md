@@ -4,30 +4,62 @@
 [![Build Status](https://travis-ci.org/willzfarmer/khan-interview.svg?branch=master)](https://travis-ci.org/willzfarmer/khan-interview)
 
 Part of the interview process at Khan Academy is to complete their interview
-project. This project (in a nutshell) deals with virus propagation through a
-directed network. We will be using the terms "graph" and "network"
-interchangeably, [but I'm referring to the same thing for
+project. This project deals with virus propagation through a directed network.
+We will be using the terms "graph" and "network" interchangeably, [but I'm
+referring to the same thing for
 both](https://en.wikipedia.org/wiki/Graph_theory).
 
-From a high level, Khan Academy is curious as to the best method for choosing a
-small portion of their users to be affected by UI changes (along with others),
+From a high level, Khan Academy would like to know the best method for choosing
+a small portion of their users to be affected by UI changes (along with others),
 without affecting every user at the same time. They define their network of
-users by *Teacher -> Student* relationships.
+users by *Teacher -> Student* relationships. I assume that teachers can also be
+students, leading to a
+[many-to-many](https://en.wikipedia.org/wiki/Many-to-many_%28data_model%29)
+network, or a [multigraph](https://en.wikipedia.org/wiki/Multigraph).
 
----
+The requirements for this project are the following.
+* Spend no more than 12 hours.
+* Put the code wherever, send it with any method.
+* Implement a total infection algorithm.
+* Implement a limited infection algorithm.
+* Provide tests and instructions for running.
 
-*Note, `python3.5` is used for this analysis and it has not been tested for
-other versions.*
+Table of Contents
+1. [Methodology](#methodology)
+2. [Setup](#setup)
+3. [Choosing an Initial Infected Node](#choosing-an-initial-infected-node)
+    1. [The Naive Approach](#the-naive-approach)
+    2. [Adding Sophistication](#adding-sophistication)
+    3. [Next Steps](#next-steps)
+4. [Total Infection](#total-infection)
+5. [Limited Infection](#limited-infection)
+    1. [Naive Limited Infection](#naive-limited-infection)
+    2. [(Better) Naive Limited Infection](#better-naive-limited-infection)
+    3. [Markov Chain Infection](#markov-chain-infection)
+    4. [Other Algorithms](#other-algorithms)
+6. [Final Thoughts](#final-thoughts)
 
-*We will be using [`pytest`](http://pytest.org/latest/),
+## Methodology
+
+In terms of language, `python3.5` is used for this analysis and it has not been
+tested for other versions.
+
+We will be using [`pytest`](http://pytest.org/latest/),
 [`numpy`](http://www.numpy.org/), [`matplotlib`](http://matplotlib.org/), and
 [`networkx`](https://networkx.github.io/) as external libraries for this
-analysis. We will be using the following common abreviations:*
+analysis. We will be using the following common abreviations:
 
 ```python
 import numpy as np
 import matplotlib.pyplot as plt
 import networkx as nx
+```
+
+The test framework used was [PyTest](http://pytest.org/latest/). To run these
+tests, run
+
+```bash
+py.test
 ```
 
 ## Setup
@@ -67,7 +99,7 @@ for graph in nx.weakly_connected_component_subgraphs(self.nxgraph):
     self.choice.append(np.random.choice(graph.nodes()))
 ```
 
-### The More Complex Approach
+### Adding Sophistication
 
 In graph theory there's a concept of
 [centrality](https://en.wikipedia.org/wiki/Centrality). In essence, centrality
@@ -92,7 +124,7 @@ the network.
 Again, we need to pick one of these per subgraph, so that way we aren't limited
 by unconnected portions of the graph.
 
-### Steps Forward
+### Next Steps
 
 Other good methods that were considered (but not implemented) were using various
 centrality metrics in order to examine the best center point. These include
@@ -105,7 +137,7 @@ centrality metrics in order to examine the best center point. These include
 
 To emphasize rigour, these various centrality measures could be compared.
 
-## Part A - Total Infections
+## Total Infection
 
 > Ideally we would like every user in any given classroom to be using the same
 > version of the site.  Enter “infections”. We can use the heuristic that each
@@ -147,7 +179,7 @@ python3.5 ./infection.py -a
 And it will infect all the nodes with a nice little animation once the analysis
 is complete.
 
-## Part B - Limited Infection
+## Limited Infection
 
 > We would like to be able to infect close to a given number of users. Ideally
 > we’d like a coach and all of their students to either have a feature or not.
@@ -218,6 +250,22 @@ To run this yourself, use
 python3.5 ./infection.py -l -a
 ```
 
+### Other Algorithms
+
+Some other algorithm choices include the following. These were not implemented.
+
+* Breadth First Search with exit thresholds: Essentially find the most central
+  node (as has been discussed), infect each one of its neighbors, check how many
+  have been infected, and iterate. Exit out if too many are infected.
+* Various connected node measures: Strongly connected subgraphs, weakly
+  connected subgraphs, etc.
+* Polynomial Chaos: [As discussed in this
+  paper](http://www.sciencedirect.com/science/article/pii/S0895717711007503)
+* Peer to Peer Network Virus Simulation: [As discussed in this
+  paper](http://www.oalib.com/paper/2648814)
+* Email Virus Simulation: [PDF
+  Warning](http://www.eecs.ucf.edu/~czou/research/emailvirus-techreport.pdf)
+
 ## Final Thoughts
 
 This is a hard problem with a ton of solutions. The naive approaches work *very*
@@ -238,8 +286,9 @@ want these infections to go both ways.
 
 In terms of time spent working on this, the code itself was written in probably
 4 to 6 hours, and then an additional 2-4 hours (hard to track) was spent on
-documentation and this writeup. I'm still torn on the concept of an interview
-project as it can be unrealistic for non-students (read, people with day jobs)
-to spend as much time as I have on it, however I do think that this is a good
-example of a project that can have a minimum viable product written in just an
-hour or two if time is an issue.
+documentation and this writeup.
+
+
+TODO: pytest assert
+TODO: test dir
+TODO: Network tweaks
