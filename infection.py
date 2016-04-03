@@ -55,7 +55,7 @@ class NetworkInfection(object):
     :returns: <NetworkInfection>
     """
     def __init__(self, nodecount, prob, write,
-                 filename='./testnetwork.npy',
+                 filename='./test/testnetwork.npy',
                  refresh=False, choose_node=False):
         self.networkfile = filename
         self.graph       = None
@@ -67,7 +67,7 @@ class NetworkInfection(object):
 
         if refresh:
             gen_new_random_graph(nodecount, prob)
-            self.filename = './testnetwork.npy'
+            self.filename = './test/testnetwork.npy'
 
     def load(self):
         """
@@ -297,7 +297,7 @@ def gen_new_random_graph(nodecount, prob):
     Will save new network to file.
     """
     newgraph = nx.binomial_graph(nodecount, prob)
-    np.save('testnetwork.npy', nx.adjacency_matrix(newgraph).todense())
+    np.save('./test/testnetwork.npy', nx.adjacency_matrix(newgraph).todense())
 
 
 def dict_item_sort(dlist):

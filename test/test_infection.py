@@ -10,10 +10,10 @@ import pytest
 class TestInfection(object):
     @pytest.fixture(scope='module')
     def infection(self):
-        return infection.NetworkInfection(50, 0.08, './testnetwork.npy')
+        return infection.NetworkInfection(50, 0.08, './test/testnetwork.npy')
 
     def test_init(self, infection):
-        assert(infection.networkfile == './testnetwork.npy')
+        assert(infection.networkfile == './test/testnetwork.npy')
 
     def test_load(self, infection):
         infection.load()
