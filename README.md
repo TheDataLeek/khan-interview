@@ -2,6 +2,7 @@
 
 [![Github](https://cdn1.iconfinder.com/data/icons/Keyamoon-IcoMoon--limited/32/github-cat.png)](https://github.com/willzfarmer/khan-interview)
 [![Build Status](https://travis-ci.org/willzfarmer/khan-interview.svg?branch=master)](https://travis-ci.org/willzfarmer/khan-interview)
+[![Coverage Status](https://coveralls.io/repos/github/willzfarmer/khan-interview/badge.svg?branch=master)](https://coveralls.io/github/willzfarmer/khan-interview?branch=master)
 
 Part of the interview process at Khan Academy is to complete their interview
 project. This project deals with virus propagation through a directed network.
