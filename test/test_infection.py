@@ -51,3 +51,8 @@ class TestInfection(object):
         infection.load()
         chain = infection._get_markovchain()
         assert chain.sum(axis=1).all() == 1
+
+def test_dict_item_sort():
+    testlist = [(1, 5), (5, 3), (0, 2), (3, 3)]
+    res = infection.dict_item_sort(testlist)
+    assert res == [(0, 2), (1, 5), (3, 3), (5, 3)]
