@@ -25,6 +25,7 @@ The requirements for this project are the following.
 * Provide tests and instructions for running.
 
 Table of Contents
+
 1. [Methodology](#methodology)
 2. [Setup](#setup)
 3. [Choosing an Initial Infected Node](#choosing-an-initial-infected-node)
