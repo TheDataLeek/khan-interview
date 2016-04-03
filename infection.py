@@ -69,7 +69,7 @@ class NetworkInfection(object):
             gen_new_random_graph(nodecount, prob)
             self.filename = './test/testnetwork.npy'
 
-    def load(self):
+    def load(self) -> None:
         """
         Loads adjacency matrix network from provided .npy file.
 
@@ -80,7 +80,7 @@ class NetworkInfection(object):
         if nx.number_weakly_connected_components(self.nxgraph) > 1:
             self.subgraphs = True
 
-    def show(self):
+    def show(self) -> None:
         """
         Draws the current network using Matplotlib.
 
@@ -91,7 +91,7 @@ class NetworkInfection(object):
         plt.show()
 
 
-    def choose(self):
+    def choose(self) -> None:
         """
         Selects a random node to initially infect for every independent subgraph.
 
@@ -106,13 +106,13 @@ class NetworkInfection(object):
                     self.choice.append(np.random.choice(graph.nodes()))
         self._infection_list()
 
-    def _infection_list(self):
+    def _infection_list(self) -> None:
         """
         Updates infection list.
         """
         self.infections = {n:(True if n in self.choice else False) for n in self.nxgraph.nodes()}
 
-    def total_infection(self):
+    def total_infection(self) -> list:
         """
         This part is straightforward, just simple BFS graph traversal on each independent subgraph.
         """
@@ -129,7 +129,7 @@ class NetworkInfection(object):
         states.append(dict_item_sort(self.infections.items()))
         return states
 
-    def limited_infection(self, infection_size, stickiness):
+    def limited_infection(self, infection_size: int, stickiness: int) -> list:
         """
         We can look at this as virus propagation. As similar as this is with the total infection
         problem, we actually want to use a completely different approach
@@ -193,7 +193,7 @@ class NetworkInfection(object):
 
         return states
 
-    def _get_markovchain(self):
+    def _get_markovchain(self) -> np.ndarray:
         """
         Returns randomized initial markov chain for graph.
 
@@ -207,14 +207,14 @@ class NetworkInfection(object):
         markovchain /= markovchain.sum(axis=0)
         return markovchain
 
-    def _infection_size(self):
+    def _infection_size(self) -> int:
         count = 0
         for key, value in self.infections.items():
             if value is True:
                 count += 1
         return count
 
-    def _graph_centrality(self):
+    def _graph_centrality(self) -> (list, int):
         """
         Finds the most central node in the graph.
         https://en.wikipedia.org/wiki/Centrality
@@ -227,7 +227,7 @@ class NetworkInfection(object):
         central_node = max(centrality_scores, key=lambda tup: tup[1])[0]
         return centrality_scores, central_node
 
-    def naive_limited_infection(self):
+    def naive_limited_infection(self) -> list:
         """
         NAIVE LIMITED INFECTION
 
@@ -252,7 +252,7 @@ class NetworkInfection(object):
 
         return states
 
-    def animate_infection(self, states):
+    def animate_infection(self, states: list) -> None:
         """
         Animate Infection Spread
 
@@ -290,7 +290,7 @@ class NetworkInfection(object):
         plt.show()
 
 
-def gen_new_random_graph(nodecount, prob):
+def gen_new_random_graph(nodecount: int, prob: float) -> None:
     """
     Generate a new random graph using binomial generation.
 
@@ -300,7 +300,7 @@ def gen_new_random_graph(nodecount, prob):
     np.save('./test/testnetwork.npy', nx.adjacency_matrix(newgraph).todense())
 
 
-def dict_item_sort(dlist):
+def dict_item_sort(dlist: list) -> list:
     """
     Provides sorted version of infection list. Need to sort list form of infection as
     dictionaries are unsorted
@@ -308,11 +308,9 @@ def dict_item_sort(dlist):
     return sorted(dlist, key=lambda tup: tup[0])
 
 
-def get_args():
+def get_args() -> argparse.Namespace:
     """
     Get command line arguments with argparse
-
-    :return: args
     """
     parser = argparse.ArgumentParser()
     parser.add_argument('-r', '--refresh', action='store_true', default=False,
