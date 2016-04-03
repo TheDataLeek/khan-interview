@@ -287,8 +287,3 @@ want these infections to go both ways.
 In terms of time spent working on this, the code itself was written in probably
 4 to 6 hours, and then an additional 2-4 hours (hard to track) was spent on
 documentation and this writeup.
-
-
-TODO: pytest assert
-TODO: test dir
-TODO: Network tweaks
