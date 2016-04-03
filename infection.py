@@ -54,9 +54,9 @@ class NetworkInfection(object):
 
     :returns: <NetworkInfection>
     """
-    def __init__(self, nodecount, prob, write,
+    def __init__(self, nodecount: int, prob: float, write: bool,
                  filename='./test/testnetwork.npy',
-                 refresh=False, choose_node=False):
+                 refresh=False, choose_node=False) -> object:
         self.networkfile = filename
         self.graph       = None
         self.nxgraph     = None
