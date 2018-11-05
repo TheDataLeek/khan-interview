@@ -284,7 +284,7 @@ class NetworkInfection(object):
 
         if self.write:
             Writer = animation.writers['ffmpeg']
-            writer = Writer(fps=10, metadata=dict(artist='Will Farmer'), bitrate=1800)
+            writer = Writer(fps=10, metadata=dict(artist='Zoe Farmer'), bitrate=1800)
             ani.save('infection.mp4', writer=writer)
 
         plt.show()
